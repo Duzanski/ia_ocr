@@ -34,7 +34,6 @@ client = MongoClient('mongodb://db:27017')
 db = client.OCRChallenge  # Db name
 imageDB = db['ImageInfos']  # table name
 
-<<<<<<< HEAD
 # Method responsible to encode the cleaned image
 
 
@@ -105,10 +104,6 @@ def readImage():
 
     return text
 
-=======
-
-
->>>>>>> feature/getimagecleaned
 
 class GetImageCleaned(Resource):
     def post(self):
@@ -152,7 +147,6 @@ class GetImageCleaned(Resource):
             'status': 200,
         }
 
-<<<<<<< HEAD
         return jsonify(retJson)
 
 
@@ -181,6 +175,3 @@ api.add_resource(GetString, '/getstring')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
-=======
-        return jsonify(retJson)
->>>>>>> feature/getimagecleaned
