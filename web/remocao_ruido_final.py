@@ -19,8 +19,8 @@ from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, UpSampling2D, Dropout, Conv2DTranspose
 from tensorflow.keras.callbacks import EarlyStopping
 
-from google.colab import drive
-drive.mount('/content/drive')
+#from google.colab import drive
+# drive.mount('/content/drive')
 
 # Setting de main path
 path = '/content/drive/MyDrive/data_cleaner/data/'
@@ -31,10 +31,12 @@ train_cleaned_img = sorted(os.listdir(path + 'train_cleaned/cleaned/'))
 test_img = sorted(os.listdir(path + 'test_dirty/test/'))
 
 # Processing de images giving it a new dtype, shape and dimension
+
+
 def process_image(path):
     img = cv2.imread(path)
     img = np.asarray(img, dtype="float32")
-    img = cv2.resize(img, (540, 420)) #changing image dimensions
+    img = cv2.resize(img, (540, 420))  # changing image dimensions
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     img = img/255.0
@@ -42,12 +44,13 @@ def process_image(path):
 
     return img
 
+
 # Crating the lists
 train = []
 train_cleaned = []
 test = []
 
-# Processing the imagens 
+# Processing the imagens
 for i in sorted(os.listdir(path + 'train_dirty/dirty/')):
     train.append(process_image(path + 'train_dirty/dirty/' + i))
 
@@ -63,31 +66,38 @@ Y_train = np.asarray(train_cleaned)
 X_test = np.asarray(test)
 
 # Using sklearn to create train and test validation
-X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size=0.2)
+X_train, X_val, Y_train, Y_val = train_test_split(
+    X_train, Y_train, test_size=0.2)
 
 autoencoder = Sequential()
 
 # -> Encoder
 
 # Adding Conv layer and decrease dimension
-autoencoder.add(Conv2D(16,(3,3), strides=1, padding='same', activation='relu', input_shape=(420,540,1)))
-autoencoder.add(MaxPooling2D((2,2), padding='same'))
+autoencoder.add(Conv2D(16, (3, 3), strides=1, padding='same',
+                activation='relu', input_shape=(420, 540, 1)))
+autoencoder.add(MaxPooling2D((2, 2), padding='same'))
 
 # Avoiding overfitting
 autoencoder.add(Dropout(0.2))
 
-autoencoder.add(Conv2D(8,(3,3), strides=1, padding='same', activation='relu'))
-autoencoder.add(MaxPooling2D((2,2), padding='same'))
+autoencoder.add(Conv2D(8, (3, 3), strides=1,
+                padding='same', activation='relu'))
+autoencoder.add(MaxPooling2D((2, 2), padding='same'))
 
 # -> Encoded image
-autoencoder.add(Conv2D(8,(3,3), strides=1, padding='same', activation='relu'))
+autoencoder.add(Conv2D(8, (3, 3), strides=1,
+                padding='same', activation='relu'))
 
 # -> Decode image and increase dimension
-autoencoder.add(UpSampling2D((2,2)))
-autoencoder.add(Conv2DTranspose(8, (3,3), strides=1, padding='same', activation='relu'))
+autoencoder.add(UpSampling2D((2, 2)))
+autoencoder.add(Conv2DTranspose(8, (3, 3), strides=1,
+                padding='same', activation='relu'))
 
-autoencoder.add(UpSampling2D((2,2)))
-autoencoder.add(Conv2DTranspose(1, (3,3), strides=1, padding='same', activation='sigmoid')) # Returning values between zero and one for the pixels
+autoencoder.add(UpSampling2D((2, 2)))
+# Returning values between zero and one for the pixels
+autoencoder.add(Conv2DTranspose(1, (3, 3), strides=1,
+                padding='same', activation='sigmoid'))
 
 autoencoder.compile(
     optimizer='adam', loss='binary_crossentropy')
@@ -95,17 +105,20 @@ autoencoder.compile(
 # Stop training when a monitored metric has stopped improving
 callback = EarlyStopping(monitor='loss', patience=30)
 
-# Start training 
-history = autoencoder.fit(X_train, Y_train, validation_data = (X_val, Y_val), epochs=100, batch_size=30, verbose=1, callbacks=[callback])
+# Start training
+history = autoencoder.fit(X_train, Y_train, validation_data=(
+    X_val, Y_val), epochs=100, batch_size=30, verbose=1, callbacks=[callback])
 
 # Showing loss on train x validation datasets over epochs
 epoch_loss = history.history['loss']
 epoch_val_loss = history.history['val_loss']
 
-plt.figure(figsize=(20,6))
-plt.subplot(1,2,1)
-plt.plot(range(0,len(epoch_loss)), epoch_loss, 'b-', linewidth=2, label='Train Loss')
-plt.plot(range(0,len(epoch_val_loss)), epoch_val_loss, 'r-', linewidth=2, label='Val Loss')
+plt.figure(figsize=(20, 6))
+plt.subplot(1, 2, 1)
+plt.plot(range(0, len(epoch_loss)), epoch_loss,
+         'b-', linewidth=2, label='Train Loss')
+plt.plot(range(0, len(epoch_val_loss)), epoch_val_loss,
+         'r-', linewidth=2, label='Val Loss')
 plt.title('Evolution of loss on train & validation datasets over epochs')
 plt.legend(loc='best')
 
@@ -115,18 +128,18 @@ plt.show()
 Y_test = autoencoder.predict(X_test, batch_size=16)
 
 # Showing dirty x cleaned images
-plt.figure(figsize=(15,25))
-for i in range(0,8,2):
-    plt.subplot(4,2,i+1)
+plt.figure(figsize=(15, 25))
+for i in range(0, 8, 2):
+    plt.subplot(4, 2, i+1)
     plt.xticks([])
     plt.yticks([])
-    plt.imshow(X_test[i][:,:,0], cmap='gray')
+    plt.imshow(X_test[i][:, :, 0], cmap='gray')
     plt.title('Noisy image: {}'.format(test_img[i]))
-    
-    plt.subplot(4,2,i+2)
+
+    plt.subplot(4, 2, i+2)
     plt.xticks([])
     plt.yticks([])
-    plt.imshow(Y_test[i][:,:,0], cmap='gray')
+    plt.imshow(Y_test[i][:, :, 0], cmap='gray')
     plt.title('Denoised by autoencoder: {}'.format(test_img[i]))
 
 plt.show()
