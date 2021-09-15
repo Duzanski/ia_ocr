@@ -56,11 +56,12 @@ def decodeImage(encoded_image):
 
 
 def loadModels():
-    with open(os.path.join('models/', 'cnn_model.json'), 'r') as f:
+    with open(os.path.join('/usr/src/app/models/', 'cnn_model.json'), 'r') as f:
         model_json = f.read()
 
         model = tf.keras.models.model_from_json(model_json)
-        model.load_weights(os.path.join('models/', 'cnn_model.h5'))
+        model.load_weights(os.path.join(
+            '/usr/src/app/models/', 'cnn_model.h5'))
 
     return model
 
