@@ -34,6 +34,75 @@ client = MongoClient('mongodb://db:27017')
 db = client.OCRChallenge  # Db name
 imageDB = db['ImageInfos']  # table name
 
+# Method responsible to encode the cleaned image
+
+
+def encodeImage():
+    with open('cleaned_image.png', 'rb') as img_file:
+        cleaned_image = base64.b64encode(img_file.read())
+
+    return cleaned_image
+
+
+# Method responsible to get de string base64, decode in an image and save it
+
+
+def decodeImage(encoded_image):
+    with open('dirty_image.png', 'wb') as file_to_save:
+        decoded_image = base64.decodebytes(encoded_image)
+        file_to_save.write(decoded_image)
+
+# Method responsible for loading the trained models and weights
+
+
+def loadModels():
+    with open(os.path.join('models/', 'cnn_model.json'), 'r') as f:
+        model_json = f.read()
+
+        model = tf.keras.models.model_from_json(model_json)
+        model.load_weights(os.path.join('models/', 'cnn_model.h5'))
+
+    return model
+
+# Method responsible to read the dirty image and process it to be predicted
+
+
+def processingImage():
+    path = 'dirty_image.png'
+    img = cv2.imread(path)
+    img = np.asarray(img, dtype="float32")
+    img = cv2.resize(img, (540, 420))
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    img = img/255.0
+    img = np.reshape(img, (420, 540, 1))
+    img = np.expand_dims(img, axis=0)
+
+    return img
+
+# Method responsible to recieve the preticted image and save it as cleaned_image
+
+
+def savePredictedImg(predicted_image):
+    plt.figure(figsize=(15, 25))
+    plt.subplot(4, 2, +1)
+    plt.xticks([])
+    plt.yticks([])
+    plt.imshow(predicted_image[0][:, :, 0], cmap='gray')
+    plt.savefig('cleaned_image.png')
+
+# Method responsible to read the cleaned image and get its string
+
+
+def readImage():
+
+    config_tesseract = '--psm 6'
+    imagem = cv2.imread('cleaned_image.png')
+    text = pytesseract.image_to_string(
+        imagem, lang='eng', config=config_tesseract)
+
+    return text
+
 
 class GetImageCleaned(Resource):
     def post(self):
