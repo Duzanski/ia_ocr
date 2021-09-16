@@ -79,5 +79,6 @@ O projeto foi desenvolvido utilizando as seguintes tecnologias:
 
     GetString           /getstring              POST            name             200 OK
                                                                                  String text
-   
+    name = nome qualquer para a imagem
+    image = imagem dirty em base 64
 ```
